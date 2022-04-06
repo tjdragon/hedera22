@@ -1,8 +1,7 @@
 # DLOBex
 
 Submission to https://hedera22.devpost.com/  
-Thierry Janaudy   
-[IN](https://www.linkedin.com/in/tsjanaudy/)  
+[Thierry Janaudy](https://www.linkedin.com/in/tsjanaudy/)  
 tjdragonhash@gmail.com  
 
 ## Introduction
