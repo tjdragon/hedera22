@@ -1,7 +1,6 @@
 # DLOBex
 
 Submission to https://hedera22.devpost.com/  
-[Thierry Janaudy](https://www.linkedin.com/in/tsjanaudy/)  
 tjdragonhash@gmail.com  
 
 ## Introduction
@@ -22,6 +21,7 @@ Features implemented in this project:
 - A smart contract that implements an order matching system using limit and market orders
 - A permissioned contract where participants are vetted by a third-party
 - A trade implementation using the ERC20 approve method with a penalizing system should the user misbehave
+- A [CLI](https://en.wikipedia.org/wiki/Command-line_interface) to interact with the Smart Contract written in Java
 - Support for HSM ([Hardware Security Module](https://en.wikipedia.org/wiki/Hardware_security_module))
 - [May Be] An entitlement system with multi-signature for authentication and authorisation
 - [May Be] A link to an Automated Market Maker contract whose inflection point is determined by the last traded price
@@ -119,7 +119,7 @@ For illustration purposes we will implement the 'Approve' option with a penaliza
 
 ## Development and testing
 The development and testing environment uses [VS Code](https://code.visualstudio.com/) and [Hardhat](https://hardhat.org/).  
-The source code for this project can be found on [GitHub](https://github.com/tjdragon).
+The source code for this project can be found on [GitHub hedera22](https://github.com/tjdragon/hedera22) for the Solidity code and on [GitHub hedera22-cli](https://github.com/tjdragon/hedera22-cli) for the CLI.
 
 ## Design choices
 [Hedera's contract service](https://hedera.com/smart-contract) is EVM-based, therefore the main contract will be implemented using [Solidity](https://docs.soliditylang.org/).  
@@ -380,19 +380,23 @@ issue limit and market orders.
 [main] INFO org.tj.hedera22.CLI - Hedera Menu. Please select an option:
 [main] INFO org.tj.hedera22.CLI -  Acting account: 0.0.7599 (Operator)
 [main] INFO org.tj.hedera22.CLI -    1. Exit
-[main] INFO org.tj.hedera22.CLI -    2. Allow Trading
-[main] INFO org.tj.hedera22.CLI -    3. Stop Trading
-[main] INFO org.tj.hedera22.CLI -    4. Add All Participants
-[main] INFO org.tj.hedera22.CLI -    5. Select participant
-[main] INFO org.tj.hedera22.CLI -    6. Display order book
-[main] INFO org.tj.hedera22.CLI -    7. Place Limit Order
-[main] INFO org.tj.hedera22.CLI -    8. Place Market Order
-[main] INFO org.tj.hedera22.CLI -    9. Display balances
-[main] INFO org.tj.hedera22.CLI -    10. Display trading allowed status
-[main] INFO org.tj.hedera22.CLI -    11. Display latest debug
+[main] INFO org.tj.hedera22.CLI -    2. Allow Trading (~ 1ℏ)
+[main] INFO org.tj.hedera22.CLI -    3. Stop Trading (~ 1ℏ)
+[main] INFO org.tj.hedera22.CLI -    4. Add All Participants (~ 2ℏ)
+[main] INFO org.tj.hedera22.CLI -    5. Select participant (free)
+[main] INFO org.tj.hedera22.CLI -    6. Display order book (~ 7ℏ)
+[main] INFO org.tj.hedera22.CLI -    7. Place Limit Order (~ 1ℏ)
+[main] INFO org.tj.hedera22.CLI -    8. Place Market Order (~ 1ℏ)
+[main] INFO org.tj.hedera22.CLI -    9. Display balances (~ 8ℏ)
+[main] INFO org.tj.hedera22.CLI -    10. Display trading allowed status (~ 0.1ℏ)
+[main] INFO org.tj.hedera22.CLI -    11. Display latest debug (~ 0ℏ)
+[main] INFO org.tj.hedera22.CLI -    12. Reset
 ```
 
-The java source code can be found [there]() and make sure you read the [readme]() as well before you start.
+Please note the costs for each operation to execute. For example, placing an order costs around 1ℏ, whereas displaying the order book costs around ~ 7ℏ.  
+Other functions could be added to reduce the costs: best buy/sell price (already implemented), last traded buy/sell price, total buy/sell volume, ...
+
+The java source code can be found [there](https://github.com/tjdragon/hedera22-cli) and make sure you read the [readme](https://github.com/tjdragon/hedera22-cli#readme) as well before you start.
 
 ## Java code
 
@@ -459,10 +463,10 @@ can sign the incoming transfer for it to be effective.
 All financial systems implement the concept of [Maker-Checker](https://en.wikipedia.org/wiki/Maker-checker).  
 One way to achieve this would be by the use of [ScheduleCreateTransaction](https://github.com/hashgraph/hedera-sdk-java/blob/main/examples/src/main/java/ScheduleMultiSigTransactionExample.java) although this process requires n-of-n signers as opposed to the more flexible n-of-m.  
 There is room for improvement, where setKey should be augmented with a Rule to be evaluated at runtime.  
-Such a Rule could implement a simple tree structure with OR/AND, and once evaluated to true, the transaction would go through.
+Such a Rule could implement a simple tree structure with OR/AND, and once evaluated to true, the transaction would go through.  
 
 ## Improvements
-- The Solidity code is not optimised and lots of careful love is required to make it more gas-efficient.  
+- The Solidity code is not optimized and lots of careful love is required to make it more gas-efficient.  
 - Build a web site to display the order book and integrate with a Metamask-like plugin and/or integrate with a Nano ledger.
 - Use the average buy/sell order prices post trade as a dynamic inflection point for AMM implementations.
 - Implement FATF-16 by default for native HBARs.
