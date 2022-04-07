@@ -10,7 +10,9 @@ A [CLOB FIFO](https://en.wikipedia.org/wiki/Order_matching_system) is a typical 
 
 "While order book mechanisms are the dominant medium of exchange of electronic assets in traditional finance, they are challenging to use within a smart contract environment. The size of the state needed by an order book to represent the set of outstanding orders (e.g., passive liquidity) is large and extremely costly in the smart contract environment, where users must pay for space and compute power utilized" ([An analysis of Uniswap markets](https://web.stanford.edu/~guillean/papers/uniswap_analysis.pdf)).
 
-The above is the reason why we do not see decentralized CLOB in existing DEXs... until [Hedera](https://hedera.com/hh-ieee_coins_paper-200516.pdf).
+The above is the reason why we have not seen decentralized CLOB in existing DEXs... until [Hedera](https://hedera.com/hh-ieee_coins_paper-200516.pdf).
+
+DLOBex stands for **D**istributed **L**imit **O**rder **B**ook **ex**change.
 
 Hedera's consensus is fast and settlement finality is deterministic. 
 Using [Solidity](https://docs.soliditylang.org/) we will implement a permissioned exchange where users can trade [ERC20s](https://ethereum.org/en/developers/docs/standards/tokens/erc-20/).  
@@ -20,8 +22,8 @@ Features implemented in this project:
 - A smart contract that implements an order matching system using limit and market orders
 - A permissioned contract where participants are vetted by a third-party
 - A trade implementation using the ERC20 approve method with a penalizing system should the user misbehave
-- Support for HSM
-- [May Be] An entitlement system with multi-signature 
+- Support for HSM ([Hardware Security Module](https://en.wikipedia.org/wiki/Hardware_security_module))
+- [May Be] An entitlement system with multi-signature for authentication and authorisation
 - [May Be] A link to an Automated Market Maker contract whose inflection point is determined by the last traded price
 
 ## Definitions
@@ -34,8 +36,8 @@ A design decision would be to only work with integers, therefore 1 HBAR equals t
 HBAR/BTC pair
 -------------
 Buy         Sell
-.	        500 at 513
-.	        50 at 512
+.	        500 @ 513
+.	        50 @ 512
 100 @ 511	.
 80 @ 510	.
 200 @ 509	.
@@ -49,7 +51,7 @@ Post trade the CLOB would update to:
 HBAR/BTC pair
 -------------
 Buy         Sell
-.	        500 at 513
+.	        500 @ 513
 100 @ 511	.
 80 @ 510	.
 200 @ 509	.
@@ -61,7 +63,7 @@ Conversely, if there is a buy for 50 lots at 511, the updated CLOB would look li
 HBAR/BTC pair
 -------------
 Buy         Sell
-.	        500 at 513
+.	        500 @ 513
 50 @ 511	.
 80 @ 510	.
 200 @ 509	.
@@ -90,8 +92,7 @@ Once a trade has happened between two parties, those parties have to deliver. Po
 when Bob sends 50 HBAR to Alice, Alice must send 25600 Satoshis to Bob.  
 
 There are several approaches to this. Let's discuss the different options.  
-There are pros and cons for each approach, but conceptually, either a user delegates the asset to the smart contract for settlement purposes (but also require the smart contract to allow withdrawal of that asset), or the user keeps the ownership of that assets but allow the smart contract, via ERC20's method approve, to transfer that asset (with the drawback that the user could
-transfer this asset prior to settlement failing the transfer should a trade happen!)
+There are pros and cons for each approach, but conceptually, either a user delegates the asset to the smart contract for settlement purposes (but also require the smart contract to allow withdrawal of that asset), or the user keeps the ownership of that asset but allows the smart contract, via ERC20's method 'approve', to transfer that asset (with the drawback that the user couldtransfer this asset prior to settlement failing the transfer should a trade happen!)
 
 ### Delegation to the Smart Contract via Approve
 The ERC20 'Approve' method allows an asset owner to delegate the ability to transfer said asset to a third-party.  
@@ -102,7 +103,7 @@ Pros:
 - The user can cancel at anytime this delegation
 
 Cons:  
-- Prior to settlement, the user can transfer the asset, regardless of the delegation amount, therefore failing settlement
+- Prior to settlement, the user can transfer the asset, regardless of the delegation amount, therefore failing settlement (hence the implementation of a fee for misbehaving)
 
 ### Transfer to the Smart Contract
 In this scenario, the use transfers the maximum amount to trade to the smart contract:
@@ -122,13 +123,13 @@ The source code for this project can be found on [GitHub](https://github.com/tjd
 
 ## Design choices
 [Hedera's contract service](https://hedera.com/smart-contract) is EVM-based, therefore the main contract will be implemented using [Solidity](https://docs.soliditylang.org/).  
-This approach is quite flexible because it allows the "Write Once, Run Everywhere (*)" approach: i.e. develop in Solidity and run on [Ethereum](https://ethereum.org/en/),
+This approach is quite flexible because it allows the "[Write Once, Run Anywhere](https://en.wikipedia.org/wiki/Write_once,_run_anywhere)" approach: i.e. develop in Solidity and run on [Ethereum](https://ethereum.org/en/),
 [Solana](https://soliditydeveloper.com/solana) and of course [Hedera](https://hedera.com/).  
 [Java](https://www.java.com/en/) is used for deployment and interaction.
 
 ## Implementation details
 
-Emphasis has been placed on functionality not optimization.
+Emphasis has been placed on functionality not optimization ;-)
 
 ### ERC20
 
@@ -169,7 +170,7 @@ struct Order {
 
 ### Prices and Sizes
 Prices and Sizes are presented as integers. 
-For Trading, each ERC20 should be define a number of decimals.  
+For Trading, each ERC20 should define a number of decimals.  
 In FX, this number is 4, using integers simplifies testing.  
 For example a 3.1415 price is represented as 31415.  
 This implementation is out of scope for this project.
@@ -178,7 +179,7 @@ This implementation is out of scope for this project.
 Orders are sorted by price. While there are some existing generic libraries available, I have decided to go for a simpler approach: sort on insert.
 
 ## Deployment and testing
-### Harhat deployment and testing
+### Hardhat deployment and testing
 Deploy the two required ERC 20 tokens (We are using a HBAR/HUSD pair with an initial supply of 1000000):
 
 ```javascript
@@ -377,12 +378,18 @@ issue limit and market orders.
 
 ```text
 [main] INFO org.tj.hedera22.CLI - Hedera Menu. Please select an option:
+[main] INFO org.tj.hedera22.CLI -  Acting account: 0.0.7599 (Operator)
 [main] INFO org.tj.hedera22.CLI -    1. Exit
-[main] INFO org.tj.hedera22.CLI -    2. Select participant
-[main] INFO org.tj.hedera22.CLI -    3. Display order book
-[main] INFO org.tj.hedera22.CLI -    4. Place Limit Order
-[main] INFO org.tj.hedera22.CLI -    5. Place Market Order
-[main] INFO org.tj.hedera22.CLI -    6. Display balances
+[main] INFO org.tj.hedera22.CLI -    2. Allow Trading
+[main] INFO org.tj.hedera22.CLI -    3. Stop Trading
+[main] INFO org.tj.hedera22.CLI -    4. Add All Participants
+[main] INFO org.tj.hedera22.CLI -    5. Select participant
+[main] INFO org.tj.hedera22.CLI -    6. Display order book
+[main] INFO org.tj.hedera22.CLI -    7. Place Limit Order
+[main] INFO org.tj.hedera22.CLI -    8. Place Market Order
+[main] INFO org.tj.hedera22.CLI -    9. Display balances
+[main] INFO org.tj.hedera22.CLI -    10. Display trading allowed status
+[main] INFO org.tj.hedera22.CLI -    11. Display latest debug
 ```
 
 The java source code can be found [there]() and make sure you read the [readme]() as well before you start.
@@ -400,7 +407,7 @@ Note the deployment uses testnet and use your operator account.
 
 Transfer some native HBARs to the participants
 For the participants to be able to interact with the native chain, transfer some native HBARs to them using TransferHBARs.
-You can then use CLI the with the option "Display balances" to confirm.
+You can then use CLI with the option "Display balances" to confirm.
 
 Transfer some tokens to the participants.
 Same as above, but using TransferTokens
